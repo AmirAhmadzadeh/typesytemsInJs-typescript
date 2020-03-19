@@ -1,2 +1,14 @@
 "use strict";
-console.log('amir is here with a lot of love ! ');
+Object.defineProperty(exports, "__esModule", { value: true });
+var MatchReader_1 = require("./MatchReader");
+var Summray_1 = require("./Summray");
+var matchReader = MatchReader_1.MatchReader.fromCsv('football.csv');
+matchReader.load();
+var winsSummary = Summray_1.Summary.consoleReportForWins();
+winsSummary.buildAndPrintReport(matchReader.matches, 'Man United');
+var avgGoalsAnalysis = Summray_1.Summary.consoleReportForAvgGoals();
+avgGoalsAnalysis.buildAndPrintReport(matchReader.matches, 'Man United');
+var avgGoalsAnalysisHtml = Summray_1.Summary.htmlReportForAvgGoals();
+avgGoalsAnalysisHtml.buildAndPrintReport(matchReader.matches, 'Man United');
+var winsSummaryHtml = Summray_1.Summary.htmlReportForWins();
+winsSummaryHtml.buildAndPrintReport(matchReader.matches, 'Man United');
