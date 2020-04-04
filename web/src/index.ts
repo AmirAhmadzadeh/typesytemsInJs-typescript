@@ -1,19 +1,17 @@
-import { User } from './models/User';
+import { UserList } from './View/UserList';
+import { User, UserProps } from './models/User';
+import { Collection } from './models/Collection';
+import axiosInstance from './http';
 
-const user = new User({ id: 1 });
+const usersCollection = new Collection<User, UserProps>((json: UserProps) => {
+  console.log('amir is here from deserialze mehtod');
+  return User.createUser(json);
+});
 
-user.fetch();
-user.set({ name: 'nameChangedByMe' });
-user.save();
-setTimeout(() => {
-  console.log(user, '*** = user info is fetch called');
-}, 5000);
-
-const user2 = new User({ id: 2 });
-
-user2.fetch();
-user2.set({ name: 'amir2', age: 100 });
-user2.save();
-setTimeout(() => {
-  console.log(user, '*** = user info is fetch called');
-}, 5000);
+usersCollection.on('change', () => {
+  const root = document.querySelector('#root');
+  if (root) {
+    new UserList(root, usersCollection).render();
+  }
+});
+usersCollection.fetch();

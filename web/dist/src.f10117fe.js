@@ -117,7 +117,548 @@ parcelRequire = (function (modules, cache, entry, globalName) {
   }
 
   return newRequire;
-})({"node_modules/axios/lib/helpers/bind.js":[function(require,module,exports) {
+})({"src/View/CollectionView.ts":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var CollectionView =
+/** @class */
+function () {
+  function CollectionView(parent, collection) {
+    this.parent = parent;
+    this.collection = collection;
+    this.render = this.render.bind(this);
+  } // render the Html Elemnets on the Window
+
+
+  CollectionView.prototype.render = function () {
+    this.parent.innerHTML = '';
+    var templateElement = document.createElement('template');
+
+    for (var _i = 0, _a = this.collection.models; _i < _a.length; _i++) {
+      var model = _a[_i];
+      var itemParent = document.createElement('div');
+      this.renderItem(model, itemParent);
+      templateElement.content.append(itemParent);
+    }
+
+    this.parent.append(templateElement.content);
+  };
+
+  return CollectionView;
+}();
+
+exports.CollectionView = CollectionView;
+},{}],"src/View/View.ts":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var View =
+/** @class */
+function () {
+  function View(parent, model) {
+    this.regions = {}; // the Parent Elemnt Of the View Component !
+
+    this.parent = parent; //the Model Of a data that we want To See !!
+
+    this.model = model; // Binding This On the Methods Of class
+
+    this.render = this.render.bind(this);
+    this.bindEvents = this.bindEvents.bind(this);
+    this.mapRegions = this.mapRegions.bind(this);
+    this.bindChangeEventOnModel = this.bindChangeEventOnModel.bind(this);
+    this.onRenderNestedCmps = this.onRenderNestedCmps.bind(this); //calling the Method to Create and Render View !
+
+    this.bindChangeEventOnModel();
+  } //About Regions
+  // Getting the Diffrent Regions that we want to See Elements
+  //this method will be over write In Inherited Classes ! ( children Classes )
+
+
+  View.prototype.regionsMap = function () {
+    return {};
+  };
+
+  View.prototype.onRenderNestedCmps = function () {}; // Map Diffrent Regions of Diffrent Components Of a Page
+
+
+  View.prototype.mapRegions = function (fragment) {
+    // console.log('amri is here right now !! Sind Sie Hire', this);
+    var regiosMap = this.regionsMap();
+
+    for (var key in regiosMap) {
+      var selector = regiosMap[key];
+      var element = fragment.querySelector(selector);
+
+      if (element) {
+        this.regions[key] = element;
+      }
+    }
+  }; // Return All the Events of a page
+
+
+  View.prototype.eventsMap = function () {
+    return {};
+  }; // render the Html Elemnets on the Window
+
+
+  View.prototype.render = function () {
+    this.parent.innerHTML = '';
+    var templateElement = document.createElement('template');
+    templateElement.innerHTML = this.template();
+    this.bindEvents(templateElement.content);
+    this.mapRegions(templateElement.content);
+    this.onRenderNestedCmps();
+    this.parent.append(templateElement.content);
+  }; // binding Events To The Elemnts Of a Fragment !
+
+
+  View.prototype.bindEvents = function (fragment) {
+    var evtsMap = this.eventsMap();
+
+    var _loop_1 = function _loop_1(key) {
+      var _a = key.split(':'),
+          evtName = _a[0],
+          elmName = _a[1];
+
+      fragment.querySelectorAll(elmName).forEach(function (elem) {
+        elem.addEventListener(evtName, evtsMap[key]);
+      });
+    };
+
+    for (var key in evtsMap) {
+      _loop_1(key);
+    }
+  }; // binding change event on the current model
+
+
+  View.prototype.bindChangeEventOnModel = function () {
+    var _this = this;
+
+    this.model.on('change', function () {
+      return _this.render();
+    });
+  };
+
+  return View;
+}();
+
+exports.View = View;
+},{}],"src/View/UserForm.ts":[function(require,module,exports) {
+"use strict";
+
+var __extends = this && this.__extends || function () {
+  var _extendStatics = function extendStatics(d, b) {
+    _extendStatics = Object.setPrototypeOf || {
+      __proto__: []
+    } instanceof Array && function (d, b) {
+      d.__proto__ = b;
+    } || function (d, b) {
+      for (var p in b) {
+        if (b.hasOwnProperty(p)) d[p] = b[p];
+      }
+    };
+
+    return _extendStatics(d, b);
+  };
+
+  return function (d, b) {
+    _extendStatics(d, b);
+
+    function __() {
+      this.constructor = d;
+    }
+
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+}();
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var View_1 = require("./View");
+
+var UserForm =
+/** @class */
+function (_super) {
+  __extends(UserForm, _super);
+
+  function UserForm(parent, model) {
+    var _this = _super.call(this, parent, model) || this;
+
+    _this.parent = parent;
+    _this.model = model;
+    _this.onSetNameClicked = _this.onSetNameClicked.bind(_this);
+    _this.onSetAge = _this.onSetAge.bind(_this);
+    _this.onSaveUser = _this.onSaveUser.bind(_this);
+    return _this;
+  }
+
+  UserForm.prototype.eventsMap = function () {
+    return {
+      'click:.set-age': this.onSetAge,
+      'click:.set-name': this.onSetNameClicked,
+      'click:.save-user': this.onSaveUser
+    };
+  };
+
+  UserForm.prototype.onSaveUser = function (evt) {
+    evt.preventDefault();
+    this.model.save();
+  };
+
+  UserForm.prototype.template = function () {
+    return "\n        \n            <input id='name' value='' />\n            <button class='set-name'> changeName </button>\n            <button class='set-age'> setRandomAge </button>\n            <button class='save-user'> saveUser </button>\n        \n    ";
+  };
+
+  UserForm.prototype.onSetNameClicked = function (evt) {
+    evt.preventDefault();
+    var inputElement = this.parent.querySelector('#name');
+
+    if (inputElement) {
+      var name = inputElement.value;
+
+      if (name.length !== 0) {
+        this.model.set({
+          name: name
+        });
+      }
+    }
+  };
+
+  UserForm.prototype.onSetAge = function (evt) {
+    evt.preventDefault();
+    var randAge = this.model.makeRandomAge();
+    this.model.set({
+      age: randAge
+    });
+  };
+
+  return UserForm;
+}(View_1.View);
+
+exports.UserForm = UserForm;
+},{"./View":"src/View/View.ts"}],"src/View/UserShow.ts":[function(require,module,exports) {
+"use strict";
+
+var __extends = this && this.__extends || function () {
+  var _extendStatics = function extendStatics(d, b) {
+    _extendStatics = Object.setPrototypeOf || {
+      __proto__: []
+    } instanceof Array && function (d, b) {
+      d.__proto__ = b;
+    } || function (d, b) {
+      for (var p in b) {
+        if (b.hasOwnProperty(p)) d[p] = b[p];
+      }
+    };
+
+    return _extendStatics(d, b);
+  };
+
+  return function (d, b) {
+    _extendStatics(d, b);
+
+    function __() {
+      this.constructor = d;
+    }
+
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+}();
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var View_1 = require("./View");
+
+var UserShow =
+/** @class */
+function (_super) {
+  __extends(UserShow, _super);
+
+  function UserShow(parent, model) {
+    var _this = _super.call(this, parent, model) || this;
+
+    _this.parent = parent;
+    _this.model = model;
+    _this.onMouseEnteredToHeader = _this.onMouseEnteredToHeader.bind(_this);
+    return _this;
+  }
+
+  UserShow.prototype.template = function () {
+    return "\n        <h1> model Form </h1>\n        <h2> name:" + this.model.get('name') + " </h2>\n        <h2> age:" + this.model.get('age') + " </h2> ";
+  }; // onMouse Enter To Header
+
+
+  UserShow.prototype.onMouseEnteredToHeader = function () {
+    alert('you entered the Heade !!');
+  }; //events map
+
+
+  UserShow.prototype.eventsMap = function () {
+    return {
+      'mouseenter:.header': this.onMouseEnteredToHeader
+    };
+  };
+
+  return UserShow;
+}(View_1.View);
+
+exports.UserShow = UserShow;
+},{"./View":"src/View/View.ts"}],"src/View/UserEditView.ts":[function(require,module,exports) {
+"use strict";
+
+var __extends = this && this.__extends || function () {
+  var _extendStatics = function extendStatics(d, b) {
+    _extendStatics = Object.setPrototypeOf || {
+      __proto__: []
+    } instanceof Array && function (d, b) {
+      d.__proto__ = b;
+    } || function (d, b) {
+      for (var p in b) {
+        if (b.hasOwnProperty(p)) d[p] = b[p];
+      }
+    };
+
+    return _extendStatics(d, b);
+  };
+
+  return function (d, b) {
+    _extendStatics(d, b);
+
+    function __() {
+      this.constructor = d;
+    }
+
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+}();
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var UserForm_1 = require("./UserForm");
+
+var UserShow_1 = require("./UserShow");
+
+var View_1 = require("./View");
+
+var UserEdit =
+/** @class */
+function (_super) {
+  __extends(UserEdit, _super);
+
+  function UserEdit(parent, model) {
+    var _this = _super.call(this, parent, model) || this;
+
+    _this.parent = parent;
+    _this.model = model;
+    _this.onMouseMouveOnUserEdit = _this.onMouseMouveOnUserEdit.bind(_this);
+    return _this;
+  } // on render nested Cmps
+
+
+  UserEdit.prototype.onRenderNestedCmps = function () {
+    new UserForm_1.UserForm(this.regions.userForm, this.model).render();
+    new UserShow_1.UserShow(this.regions.userShow, this.model).render();
+  }; //regionMap
+
+
+  UserEdit.prototype.regionsMap = function () {
+    return {
+      userShow: '.user-show',
+      userForm: '.user-form'
+    };
+  }; // template of a User edit component
+
+
+  UserEdit.prototype.template = function () {
+    return "\n    <div>\n      <header class='user-show'></header>\n      <form class='user-form'></form>\n    </div>\n    ";
+  }; //over ride !
+
+
+  UserEdit.prototype.eventsMap = function () {
+    return {
+      mouseentered: this.onMouseMouveOnUserEdit
+    };
+  };
+
+  UserEdit.prototype.onMouseMouveOnUserEdit = function () {
+    console.log('amir is here in mouse entered To mouse Moved In the UserEdit');
+  };
+
+  return UserEdit;
+}(View_1.View);
+
+exports.UserEdit = UserEdit;
+},{"./UserForm":"src/View/UserForm.ts","./UserShow":"src/View/UserShow.ts","./View":"src/View/View.ts"}],"src/View/UserList.ts":[function(require,module,exports) {
+"use strict";
+
+var __extends = this && this.__extends || function () {
+  var _extendStatics = function extendStatics(d, b) {
+    _extendStatics = Object.setPrototypeOf || {
+      __proto__: []
+    } instanceof Array && function (d, b) {
+      d.__proto__ = b;
+    } || function (d, b) {
+      for (var p in b) {
+        if (b.hasOwnProperty(p)) d[p] = b[p];
+      }
+    };
+
+    return _extendStatics(d, b);
+  };
+
+  return function (d, b) {
+    _extendStatics(d, b);
+
+    function __() {
+      this.constructor = d;
+    }
+
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+}();
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var CollectionView_1 = require("./CollectionView");
+
+var UserEditView_1 = require("./UserEditView");
+
+var UserList =
+/** @class */
+function (_super) {
+  __extends(UserList, _super);
+
+  function UserList(parent, collection) {
+    return _super.call(this, parent, collection) || this;
+  }
+
+  UserList.prototype.renderItem = function (model, parentItem) {
+    // new UserShow(parentItem, model).render();
+    // new UserForm(parentItem, model).render();
+    new UserEditView_1.UserEdit(parentItem, model);
+  };
+
+  UserList.prototype.regionsMap = function () {
+    return {};
+  };
+
+  UserList.prototype.onRenderNestedCmps = function () {};
+
+  return UserList;
+}(CollectionView_1.CollectionView);
+
+exports.UserList = UserList;
+},{"./CollectionView":"src/View/CollectionView.ts","./UserEditView":"src/View/UserEditView.ts"}],"src/models/Model.ts":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var Model =
+/** @class */
+function () {
+  function Model(attributes, events, dataSync) {
+    this.attributes = attributes;
+    this.events = events;
+    this.dataSync = dataSync;
+    this.trigger = this.events.trigger;
+    this.on = this.events.on;
+    this.get = this.attributes.get;
+    this.set = this.set.bind(this);
+    this.fetch = this.fetch.bind(this);
+    this.save = this.save.bind(this);
+  }
+
+  Model.prototype.set = function (update) {
+    this.attributes.set(update);
+    this.events.trigger('change');
+  };
+
+  Model.prototype.fetch = function () {
+    var _this = this;
+
+    var id = this.get('id');
+
+    if (typeof id !== 'number') {
+      new Error('The Id for fetching data is not a number');
+    }
+
+    this.dataSync.fetch(id).then(function (response) {
+      _this.set(response.data);
+    });
+  };
+
+  Model.prototype.save = function () {
+    var _this = this;
+
+    this.dataSync.save(this.attributes.getAll()).then(function (response) {
+      _this.trigger('save');
+    }).catch(function (err) {
+      _this.trigger('error');
+
+      console.log('Error in saving a data', err);
+    });
+  };
+
+  return Model;
+}();
+
+exports.Model = Model;
+},{}],"src/models/Eventing.ts":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var Eventing =
+/** @class */
+function () {
+  function Eventing() {
+    this.events = {};
+    this.on = this.on.bind(this);
+    this.trigger = this.trigger.bind(this);
+  }
+
+  Eventing.prototype.on = function (eventName, callback) {
+    var handlers = this.events[eventName] || [];
+    handlers.push(callback);
+    this.events[eventName] = handlers;
+  };
+
+  Eventing.prototype.trigger = function (eventName) {
+    var handlers = this.events[eventName];
+
+    if (!handlers || handlers.length === 0) {
+      return;
+    }
+
+    handlers.forEach(function (callBack) {
+      callBack();
+    });
+  };
+
+  return Eventing;
+}();
+
+exports.Eventing = Eventing;
+},{}],"node_modules/axios/lib/helpers/bind.js":[function(require,module,exports) {
 'use strict';
 
 module.exports = function bind(fn, thisArg) {
@@ -1896,10 +2437,10 @@ Object.defineProperty(exports, "__esModule", {
 var axios_1 = __importDefault(require("axios"));
 
 var axiosInstance = axios_1.default.create({
-  baseURL: 'http://localhost:2222/'
+  baseURL: 'http://localhost:3000/'
 });
 exports.default = axiosInstance;
-},{"axios":"node_modules/axios/index.js"}],"src/models/User.ts":[function(require,module,exports) {
+},{"axios":"node_modules/axios/index.js"}],"src/models/DataStore.ts":[function(require,module,exports) {
 "use strict";
 
 var __importDefault = this && this.__importDefault || function (mod) {
@@ -1914,99 +2455,202 @@ Object.defineProperty(exports, "__esModule", {
 
 var index_1 = __importDefault(require("../http/index"));
 
-var User =
+var DataStore =
 /** @class */
 function () {
-  function User(data) {
-    this.data = data;
-    this.events = {};
-  }
-
-  User.prototype.get = function (popName) {
-    return this.data[popName];
-  };
-
-  User.prototype.set = function (update) {
-    this.data = Object.assign(this.data, update);
-  };
-
-  User.prototype.on = function (eventName, callback) {
-    var handlers = this.events[eventName] || [];
-    handlers.push(callback);
-    this.events[eventName] = handlers;
-  };
-
-  User.prototype.trigger = function (eventName) {
-    var handlers = this.events[eventName];
-
-    if (!handlers || handlers.length === 0) {
-      return;
-    }
-
-    handlers.forEach(function (callBack) {
-      callBack();
-    });
-  };
-
-  User.prototype.fetch = function () {
-    var _this = this; // console.log('amir is here', this.get('id'));
+  function DataStore() {} //fetch data
 
 
-    index_1.default.get("user/" + this.get('id')).then(function (response) {
-      _this.set(response.data);
-    }).catch(function (err) {
-      console.log('[Error In Fetch data method]!!', err);
-    });
-  }; // save data
+  DataStore.prototype.fetch = function (id) {
+    return index_1.default.get("user/" + id);
+  }; //save data
 
 
-  User.prototype.save = function () {
-    var id = this.get('id');
+  DataStore.prototype.save = function (data) {
+    var id = data.id;
 
     if (id) {
-      index_1.default.put("user/" + id, this.data);
+      return index_1.default.put("user/" + id, data);
     } else {
-      index_1.default.post("user", this.data);
+      return index_1.default.post("user", data);
     }
   };
 
-  return User;
+  return DataStore;
 }();
 
-exports.User = User;
-},{"../http/index":"src/http/index.ts"}],"src/index.ts":[function(require,module,exports) {
+exports.DataStore = DataStore;
+},{"../http/index":"src/http/index.ts"}],"src/models/Attributes.ts":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
+var Attributes =
+/** @class */
+function () {
+  function Attributes(data) {
+    this.data = data;
+    this.get = this.get.bind(this);
+    this.set = this.set.bind(this);
+    this.getAll = this.getAll.bind(this);
+  }
+
+  Attributes.prototype.get = function (key) {
+    return this.data[key];
+  };
+
+  Attributes.prototype.set = function (update) {
+    this.data = Object.assign(this.data, update);
+  };
+
+  Attributes.prototype.getAll = function () {
+    return this.data;
+  };
+
+  return Attributes;
+}();
+
+exports.Attributes = Attributes;
+},{}],"src/models/User.ts":[function(require,module,exports) {
+"use strict";
+
+var __extends = this && this.__extends || function () {
+  var _extendStatics = function extendStatics(d, b) {
+    _extendStatics = Object.setPrototypeOf || {
+      __proto__: []
+    } instanceof Array && function (d, b) {
+      d.__proto__ = b;
+    } || function (d, b) {
+      for (var p in b) {
+        if (b.hasOwnProperty(p)) d[p] = b[p];
+      }
+    };
+
+    return _extendStatics(d, b);
+  };
+
+  return function (d, b) {
+    _extendStatics(d, b);
+
+    function __() {
+      this.constructor = d;
+    }
+
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+}();
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var Model_1 = require("./Model");
+
+var Eventing_1 = require("./Eventing");
+
+var DataStore_1 = require("./DataStore");
+
+var Attributes_1 = require("./Attributes");
+
+var User =
+/** @class */
+function (_super) {
+  __extends(User, _super);
+
+  function User() {
+    var _this = _super !== null && _super.apply(this, arguments) || this;
+
+    _this.makeRandomAge = function () {
+      return Math.round(Math.random() * 100);
+    };
+
+    return _this;
+  }
+
+  User.createUser = function (data) {
+    // create a user !
+    return new User(new Attributes_1.Attributes(data), new Eventing_1.Eventing(), new DataStore_1.DataStore());
+  };
+
+  return User;
+}(Model_1.Model);
+
+exports.User = User;
+},{"./Model":"src/models/Model.ts","./Eventing":"src/models/Eventing.ts","./DataStore":"src/models/DataStore.ts","./Attributes":"src/models/Attributes.ts"}],"src/models/Collection.ts":[function(require,module,exports) {
+"use strict";
+
+var __importDefault = this && this.__importDefault || function (mod) {
+  return mod && mod.__esModule ? mod : {
+    "default": mod
+  };
+};
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var http_1 = __importDefault(require("../http"));
+
+var Eventing_1 = require("./Eventing");
+
+var Collection =
+/** @class */
+function () {
+  function Collection(deserialize) {
+    this.deserialize = deserialize;
+    this.models = [];
+    this.events = new Eventing_1.Eventing();
+    this.on = this.events.on;
+    this.trigger = this.events.trigger;
+    this.fetch = this.fetch.bind(this);
+  }
+
+  Collection.prototype.fetch = function () {
+    var _this = this;
+
+    http_1.default.get('/user').then(function (response) {
+      response.data.forEach(function (usr) {
+        _this.models.push(_this.deserialize(usr));
+      });
+
+      _this.trigger('change');
+    }).catch(function (err) {
+      console.log("amir is here Error in fetch \n       method in Collection Class " + err);
+    });
+  };
+
+  return Collection;
+}();
+
+exports.Collection = Collection;
+},{"../http":"src/http/index.ts","./Eventing":"src/models/Eventing.ts"}],"src/index.ts":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var UserList_1 = require("./View/UserList");
+
 var User_1 = require("./models/User");
 
-var user = new User_1.User({
-  id: 1
+var Collection_1 = require("./models/Collection");
+
+var usersCollection = new Collection_1.Collection(function (json) {
+  console.log('amir is here from deserialze mehtod');
+  return User_1.User.createUser(json);
 });
-user.fetch();
-user.set({
-  name: 'nameChangedByMe'
+usersCollection.on('change', function () {
+  var root = document.querySelector('#root');
+
+  if (root) {
+    new UserList_1.UserList(root, usersCollection).render();
+  }
 });
-user.save();
-setTimeout(function () {
-  console.log(user, '*** = user info is fetch called');
-}, 5000);
-var user2 = new User_1.User({
-  id: 2
-});
-user2.fetch();
-user2.set({
-  name: 'amir2',
-  age: 100
-});
-user2.save();
-setTimeout(function () {
-  console.log(user, '*** = user info is fetch called');
-}, 5000);
-},{"./models/User":"src/models/User.ts"}],"../../../../../../usr/lib/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+usersCollection.fetch();
+},{"./View/UserList":"src/View/UserList.ts","./models/User":"src/models/User.ts","./models/Collection":"src/models/Collection.ts"}],"../../../../../../usr/lib/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
@@ -2034,7 +2678,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "42497" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "44961" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
