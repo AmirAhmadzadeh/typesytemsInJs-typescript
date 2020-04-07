@@ -3,12 +3,14 @@ import { Router, Response, Request } from 'express';
 import LoginController from '../contorollers/LoginContoroller';
 import requireAuth from '../midlwares/authMiddleWare';
 import HomeController from '../contorollers/HomeController';
+
 // Instantiating the Models and Routes !
 const loginController = new LoginController();
 const homeController = new HomeController();
 const router = Router();
 
 // routes
+
 //get the login page
 router.get('/login', loginController.getLoginPage);
 

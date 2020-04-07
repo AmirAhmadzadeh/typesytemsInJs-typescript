@@ -16,13 +16,16 @@ var Server = /** @class */ (function () {
         this.runApp = this.runApp.bind(this);
         this.runApp();
     }
+    // configure app
     Server.prototype.configiureApp = function () {
         this.app.use(body_parser_1.default.urlencoded({ extended: true }));
         this.app.use(cookie_session_1.default({ keys: ['icajkncja'] }));
     };
+    // handling routes
     Server.prototype.setRoutes = function () {
         this.app.use(loginRotes_1.router);
     };
+    // Set Port of a express app
     Server.prototype.setPort = function () {
         this.app.listen(3000, function (err) {
             if (err)
@@ -30,6 +33,7 @@ var Server = /** @class */ (function () {
             console.log('Server is runnig on port http://localhost:3000');
         });
     };
+    // Run Application
     Server.prototype.runApp = function () {
         this.configiureApp();
         this.setPort();

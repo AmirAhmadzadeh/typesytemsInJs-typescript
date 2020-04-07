@@ -13,22 +13,23 @@ export default class Server {
 
     this.runApp();
   }
-
+  // configure app
   configiureApp(): void {
     this.app.use(bodyParser.urlencoded({ extended: true }));
     this.app.use(cookieParser({ keys: ['icajkncja'] }));
   }
-
+  // handling routes
   setRoutes(): void {
     this.app.use(router);
   }
+  // Set Port of a express app
   setPort(): void {
-    this.app.listen(3000, err => {
+    this.app.listen(3000, (err) => {
       if (err) console.log('Error In Run Method Of a Server Class', err);
       console.log('Server is runnig on port http://localhost:3000');
     });
   }
-
+  // Run Application
   runApp(): void {
     this.configiureApp();
     this.setPort();
