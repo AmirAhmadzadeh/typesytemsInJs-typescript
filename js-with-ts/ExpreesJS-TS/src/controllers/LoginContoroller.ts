@@ -1,14 +1,10 @@
 import { Response, Request } from 'express';
+import { controller, get, post } from './decorators';
+import { bodyValidator } from './decorators/body_validator';
 
-interface RequestWithBody extends Request {
-  body: {
-    [key: string]: string | undefined;
-  };
-}
-
+@controller('/auth')
 export default class LoginController {
-  constructor() {}
-
+  @get('/login')
   getLoginPage(req: Request, res: Response) {
     res.send(`
       <form method='POST'> 
@@ -23,11 +19,13 @@ export default class LoginController {
        <div>
           <button>Submit</button>
        </div>
-      </form
+      </form>
     `);
   }
 
-  logIn(req: RequestWithBody, res: Response): void {
+  @post('/login')
+  @bodyValidator('email', 'password')
+  logIn(req: Request, res: Response): void {
     const { email, password } = req.body;
 
     if (email === 'hi@hi.com' && password === 'pass') {
@@ -37,9 +35,9 @@ export default class LoginController {
     res.send('Invalid Email And Password');
   }
 
+  @get('/logout')
   logout(req: Request, res: Response) {
     req.session = undefined;
-
     res.redirect('/');
   }
 }
